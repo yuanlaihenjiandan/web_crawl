@@ -1,0 +1,7 @@
+首先文件
+web_rank.py执行爬虫代码
+web_test.txt起始文件，保存了所有的网站，以及国家字段
+all_domains.txt保存所有形如www.baidu.com的网址
+domains_rest.txt保存所有剩下还没爬取的形如www.baidu.com的网址
+web_rank.txt保存所有爬取下来的形如www.baidu.com网址及其排名
+

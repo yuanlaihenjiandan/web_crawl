@@ -1,0 +1,57 @@
+1.知识点
+url = "http://alexa.chinaz.com/Handlers/GetAlexaPvNumHandler.ashx"
+post_data = {'url':'nbrm.gov.mk'}
+data = urllib.urlencode(post_data)
+request = urllib2.Request(url,data)
+response = urllib2.urlopen(request)
+return html
+诸如以上返回的内容
+通过使用
+>>> print html.info().get('Content-Encoding')
+>>> None
+
+在浏览器中(headers内容)Accept-Encoding:gzip, deflate, sdch 在告诉网站浏览器支持 gzip， deflate， sdch 这三种压缩方式。也就是说这不代表网站支持的压缩方式，而是代表浏览器支持的压缩方式。
+但如果不设置Accept-Encoding,则不会进行压缩。也就是说，只有设置了Accept-Encoding这个头才会被压缩
+
+判断网页有无被压缩的方法：观察其返回内容
+urllib2.urlopen(request).info().get('Content-Encoding')
+返回None则没被压缩，其余则被压缩了！
+
+
+2.爬虫知识
+爬虫过程中，10054错误！当频繁访问某个网站时，会被识别为恶意攻击，如下为具体的解决方案。
+连接参考：http://blog.sina.com.cn/s/blog_6104d9ea010154b5.html
+出现这种原因可能有socket超时时间过长；也可能是request = urllib2.urlopen(url)之后，没有进行request.close()操作；也可能是没有sleep几秒，导致网站认定这种行为是攻击
+如下为代码解决方案：
+import socket
+import time
+timeout = 20
+socket.setdefaulttimeout(timeout)#这里对整个socket层设置超时时间。后续文件中如果再使用到socket，不必再设置
+
+sleep_download_time = 10
+time.sleep(sleep_download_time) #这里时间自己设定
+
+request = urllib2.urlopen(url)#这里是要读取内容的url
+content = request.read()#读取，一般会在这里报异常
+request.close()#记得要关闭
+
+因为urlopen之后的read()操作其实是调用了socket层的某些函数。所以设置socket缺省超时时间，就可以让网络自己断掉。不必在read()处一直等待。
+
+
+异常处理：
+try:
+  time.sleep(self.sleep_download_time)
+  request = urllib2.urlopen(url)
+  content = request.read()
+  request.close()
+except UnicodeDecodeError as e:
+  print('-----UnicodeDecodeErrorurl:',url)
+except urllib.error.URLError as e:
+  print("-----urlErrorurl:",url)
+except socket.timeout as e:
+  print("-----socket timout:",url)
+
+
+#如何解决爬虫爬到中途断开的尴尬，能否标记号？
+还有一个问题，见桌面'问题'图片
+还有另一个程序，web_rank.py在等上面问题解决过后才以下载相关内容！
